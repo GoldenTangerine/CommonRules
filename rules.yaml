@@ -19,6 +19,7 @@ payload:
   - DOMAIN-KEYWORD,cursor
   - DOMAIN-SUFFIX,cursor.sh
   - DOMAIN-SUFFIX,cursorapi.com
+  - DOMAIN-SUFFIX,workos.com
 
   # gemini节点代理规则
   # Google AI相关精确域名
@@ -45,3 +46,27 @@ payload:
   - DOMAIN,cdn.usefathom.com
   - DOMAIN-SUFFIX,anthropic.com
   - DOMAIN-SUFFIX,claude.ai
+  - DOMAIN,cdn.usefathom.com
+  - DOMAIN-SUFFIX,anthropic.com
+  - DOMAIN-SUFFIX,claudeusercontent.com
+
+
+  # Augmentcode 节点代理 域名关键词 后缀匹配
+  - DOMAIN-KEYWORD,augmentcode
+  - DOMAIN-SUFFIX,augmentcode.com
+
+  # Trae 节点代理
+  - DOMAIN-SUFFIX,trae.ai
+  - DOMAIN-SUFFIX,byteoversea.com
+  - DOMAIN-SUFFIX,trae-api-sg.mchost.guru
+  - DOMAIN-SUFFIX,lf3-static.bytednsdoc.com
+  - DOMAIN-SUFFIX,bytegate-sg.byteintlapi.com
+  - DOMAIN-SUFFIX,abtestvm-sg.bytedance.com
+  - DOMAIN-SUFFIX,tron-sg.bytelemon.com
+  - DOMAIN-SUFFIX,sf16-short-sg.bytedapm.com
+  - DOMAIN-SUFFIX,trae.com.cn
+  - DOMAIN-SUFFIX,tron.jiyunhudong.com
+  - DOMAIN-SUFFIX,starling.zijieapi.com
+
+
+
