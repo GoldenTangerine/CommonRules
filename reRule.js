@@ -5,8 +5,19 @@ function main(config, profileName) {
     // 2. 代理组关键词数组（可随时扩展）
     const groupKeywords = ['美国', 'united states', 'us', 'america'];
 
-    // 3. 控制开关（true = 启用，false = 禁用）
+    // 3. 直连网址数组（这些网址不走代理，直接连接）
+    // 支持格式: 完整URL (https://example.com) 或 纯域名 (example.com)
+    const DIRECT_URLS = [
+        'https://hk1.pincc.ai',
+        'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
+        // 可以继续添加其他需要直连的网址
+        // 'https://example.com',
+        // 'another-domain.com',
+    ];
+
+    // 4. 控制开关（true = 启用，false = 禁用）
     const ENABLE_RULES = {
+        directUrls: true,  // 直连网址开关
         cursor: true,
         gemini: true,
         claude: true,
@@ -14,7 +25,7 @@ function main(config, profileName) {
         trae: true
     };
 
-    // 4. 分类好的规则
+    // 5. 分类好的规则
     const RULES = {
         cursor: {
             'DOMAIN': [
@@ -76,7 +87,7 @@ function main(config, profileName) {
         }
     };
 
-    // 5. 搜索符合条件的代理组
+    // 6. 搜索符合条件的代理组
     const proxyGroups = config['proxy-groups'] || [];
     if (proxyGroups.length > 0) {
         const matchedGroups = proxyGroups.filter(group =>
@@ -92,12 +103,45 @@ function main(config, profileName) {
             : proxyGroups[0].name;
     }
 
-    // 6. 生成规则并去重
+    // 7. 生成规则并去重
     const prependRules = new Set();
 
+    // 7.1 优先处理直连规则（确保最高优先级）
+    if (ENABLE_RULES.directUrls && DIRECT_URLS && DIRECT_URLS.length > 0) {
+        DIRECT_URLS.forEach(url => {
+            // 跳过空字符串和无效值
+            if (!url || typeof url !== 'string' || url.trim() === '') {
+                return;
+            }
+
+            const trimmedUrl = url.trim();
+            let domain = trimmedUrl;
+
+            try {
+                // 尝试解析为 URL (支持 https://example.com 格式)
+                const urlObj = new URL(trimmedUrl);
+                domain = urlObj.hostname;
+            } catch (e) {
+                // 解析失败,当作纯域名处理 (支持 example.com 格式)
+                // 移除可能的协议前缀和路径
+                domain = trimmedUrl
+                    .replace(/^(https?:\/\/)?(www\.)?/, '')  // 移除协议和 www
+                    .replace(/\/.*$/, '')  // 移除路径部分
+                    .toLowerCase();  // 转小写
+            }
+
+            // 验证域名有效性 (简单检查)
+            if (domain && domain.includes('.')) {
+                prependRules.add(`DOMAIN,${domain},DIRECT`);
+            }
+        });
+    }
+
+    // 7.2 处理代理规则
     for (const [service, enabled] of Object.entries(ENABLE_RULES)) {
-        if (!enabled) continue; // 跳过关闭的服务
+        if (!enabled || service === 'directUrls') continue; // 跳过关闭的服务和 directUrls
         const ruleSet = RULES[service];
+        if (!ruleSet) continue; // 跳过不存在的规则集
         for (const [ruleType, domains] of Object.entries(ruleSet)) {
             domains.forEach(domain => {
                 prependRules.add(`${ruleType},${domain},${targetGroup}`);
@@ -105,7 +149,7 @@ function main(config, profileName) {
         }
     }
 
-    // 7. 插入到开头，保证去重
+    // 8. 插入到开头，保证去重
     config.rules = config.rules || [];
     const finalRules = [...prependRules, ...config.rules];
     config.rules = Array.from(new Set(finalRules));
