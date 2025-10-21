@@ -9,10 +9,7 @@ function main(config, profileName) {
     // 支持格式: 完整URL (https://example.com) 或 纯域名 (example.com)
     const DIRECT_URLS = [
         'https://hk1.pincc.ai',
-        'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
-        // 可以继续添加其他需要直连的网址
-        // 'https://example.com',
-        // 'another-domain.com',
+        //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
     ];
 
     // 4. 控制开关（true = 启用，false = 禁用）
