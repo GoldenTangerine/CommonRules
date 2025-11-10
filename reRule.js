@@ -9,6 +9,7 @@ function main(config, profileName) {
     // 支持格式: 完整URL (https://example.com) 或 纯域名 (example.com)
     const DIRECT_URLS = [
         'https://hk1.pincc.ai',
+        'minimaxi.com',
         //'https://linux.do/',
         //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
     ];
