@@ -23,22 +23,7 @@ function main(config, profileName) {
         //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
     ];
 
-    // 4. 自定义代理组配置（支持为不同代理组配置不同规则）
-    // 每个代理组支持两种规则类型:
-    //   - {type: 'keyword', value: 'google'} → 生成 DOMAIN-KEYWORD 规则
-    //   - {type: 'suffix', value: 'youtube.com'} → 生成 DOMAIN-SUFFIX 规则
-    const PROXY_GROUPS = [
-        {
-            name: 'us',
-            groupKeywords: ['美国', 'united states', 'us', 'america'],
-            rules: [
-                {type: 'keyword', value: 'spotify'},
-                {type: 'suffix', value: 'spotify.com'}
-            ]
-        }
-    ];
-
-    // 5. 控制开关（true = 启用，false = 禁用）
+    // 4. 控制开关（true = 启用，false = 禁用）
     const ENABLE_RULES = {
         directUrls: true,  // 直连网址开关
         cursor: true,
@@ -47,8 +32,6 @@ function main(config, profileName) {
         augmentcode: true,
         trae: true,
         spotify: true,
-        // 代理组开关（根据 PROXY_GROUPS 中的 name 字段添加）
-        proxyGroup_us: true,
     };
 
     // 5. 分类好的规则
@@ -190,50 +173,9 @@ function main(config, profileName) {
         });
     }
 
-    // 7.2 处理自定义代理组规则
-    if (PROXY_GROUPS && PROXY_GROUPS.length > 0) {
-        PROXY_GROUPS.forEach(proxyGroup => {
-            const groupName = proxyGroup.name;
-            const switchKey = `proxyGroup_${groupName}`;
-
-            // 检查开关是否启用
-            if (!ENABLE_RULES[switchKey]) return;
-
-            // 查找匹配的代理组
-            const matchedGroups = proxyGroups.filter(group =>
-                group.name &&
-                proxyGroup.groupKeywords.some(kw =>
-                    new RegExp(kw, 'i').test(group.name)
-                )
-            );
-
-            // 如果没有匹配的代理组，跳过
-            if (matchedGroups.length === 0) return;
-
-            const matchedGroupName = matchedGroups[0].name;
-
-            // 处理规则
-            if (proxyGroup.rules && proxyGroup.rules.length > 0) {
-                proxyGroup.rules.forEach(rule => {
-                    if (!rule.value || typeof rule.value !== 'string' || rule.value.trim() === '') {
-                        return;
-                    }
-
-                    const ruleValue = rule.value.trim().toLowerCase();
-
-                    if (rule.type === 'keyword') {
-                        prependRules.add(`DOMAIN-KEYWORD,${ruleValue},${matchedGroupName}`);
-                    } else if (rule.type === 'suffix') {
-                        prependRules.add(`DOMAIN-SUFFIX,${ruleValue},${matchedGroupName}`);
-                    }
-                });
-            }
-        });
-    }
-
-    // 7.3 处理代理规则
+    // 7.2 处理代理规则
     for (const [service, enabled] of Object.entries(ENABLE_RULES)) {
-        if (!enabled || service === 'directUrls' || service.startsWith('proxyGroup_')) continue; // 跳过关闭的服务、directUrls 和代理组开关
+        if (!enabled || service === 'directUrls') continue; // 跳过关闭的服务和 directUrls
         const ruleSet = RULES[service];
         if (!ruleSet) continue; // 跳过不存在的规则集
         for (const [ruleType, domains] of Object.entries(ruleSet)) {
