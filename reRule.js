@@ -18,8 +18,8 @@ function main(config, profileName) {
         'https://hk1.pincc.ai',           // 完整 URL 格式
         'minimaxi.com',                   // 纯域名格式
         {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
-        //'https://linux.do/',
-        //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
+        'https://yxn.hk', 
+        //'https://linux.do/', // 建议保留尾随逗号,便于后续添加
     ];
 
     // 3. 控制开关（true = 启用，false = 禁用）
