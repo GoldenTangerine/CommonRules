@@ -4,10 +4,13 @@
  * @description 根据配置自动生成直连和代理规则,支持多种格式的URL、域名和关键词匹配
  */
 function main(config, profileName) {
-    // 1. 默认回退组
+    // 1. 日志开关控制
+    const ENABLE_LOGGING = true;
+
+    // 2. 默认回退组
     let targetGroup = 'DIRECT';
 
-    // 2. 代理组关键词数组（可随时扩展）
+    // 3. 代理组关键词数组（可随时扩展）
     const groupKeywords = ['美国', 'united states', 'us', 'america'];
 
     // 预编译正则表达式，提高性能
@@ -217,68 +220,78 @@ function main(config, profileName) {
     const prependRules = new Set();
 
     // 配置验证
-    console.log('🔍 配置验证中...');
-    const enabledServices = Object.entries(ENABLE_RULES)
-        .filter(([key, value]) => value && key !== 'directUrls')
-        .map(([key]) => key);
-    console.log(`✅ 启用的服务: ${enabledServices.join(', ')}`);
+    if (ENABLE_LOGGING) {
+        console.log('🔍 配置验证中...');
+        const enabledServices = Object.entries(ENABLE_RULES)
+            .filter(([key, value]) => value && key !== 'directUrls')
+            .map(([key]) => key);
+        console.log(`✅ 启用的服务: ${enabledServices.join(', ')}`);
 
-    const missingServices = enabledServices.filter(service => !RULES[service]);
-    if (missingServices.length > 0) {
-        console.warn(`⚠️ 配置警告: ENABLE_RULES 中存在但 RULES 中缺失的服务: ${missingServices.join(', ')}`);
+        const missingServices = enabledServices.filter(service => !RULES[service]);
+        if (missingServices.length > 0) {
+            console.log(`⚠️ 配置警告: ENABLE_RULES 中存在但 RULES 中缺失的服务: ${missingServices.join(', ')}`);
+        }
+
+        console.log(`🎯 目标代理组: ${targetGroup}`);
     }
 
-    console.log(`🎯 目标代理组: ${targetGroup}`);
-
     // 7.1 优先处理直连规则（确保最高优先级）
-    console.log('⚡ 处理直连规则...');
+    if (ENABLE_LOGGING) {
+        console.log('⚡ 处理直连规则...');
+    }
     processDirectRules(prependRules);
 
     // 7.2 处理代理规则
-    console.log('🌐 处理代理规则...');
+    if (ENABLE_LOGGING) {
+        console.log('🌐 处理代理规则...');
+    }
     processProxyRules(prependRules);
 
-    console.log(`✅ 总共生成 ${prependRules.size} 条规则`);
-    const directCount = Array.from(prependRules).filter(rule => rule.includes('DIRECT')).length;
-    const proxyCount = prependRules.size - directCount;
-    console.log(`   - 直连规则: ${directCount} 条`);
-    console.log(`   - 代理规则: ${proxyCount} 条`);
+    if (ENABLE_LOGGING) {
+        console.log(`✅ 总共生成 ${prependRules.size} 条规则`);
+        const directCount = Array.from(prependRules).filter(rule => rule.includes('DIRECT')).length;
+        const proxyCount = prependRules.size - directCount;
+        console.log(`   - 直连规则: ${directCount} 条`);
+        console.log(`   - 代理规则: ${proxyCount} 条`);
+    }
 
     // 8. 插入到开头，保证去重
     config.rules = config.rules || [];
     const finalRules = [...prependRules, ...config.rules];
 
     // 规则验证
-    console.log('🔍 规则验证中...');
-    let invalidRules = 0;
-    const ruleTypeCounts = { DOMAIN: 0, 'DOMAIN-KEYWORD': 0, 'DOMAIN-SUFFIX': 0 };
+    if (ENABLE_LOGGING) {
+        console.log('🔍 规则验证中...');
+        let invalidRules = 0;
+        const ruleTypeCounts = { DOMAIN: 0, 'DOMAIN-KEYWORD': 0, 'DOMAIN-SUFFIX': 0 };
 
-    finalRules.forEach(rule => {
-        if (typeof rule !== 'string' || !rule.includes(',')) {
-            invalidRules++;
-            return;
+        finalRules.forEach(rule => {
+            if (typeof rule !== 'string' || !rule.includes(',')) {
+                invalidRules++;
+                return;
+            }
+
+            const [type] = rule.split(',');
+            if (['DOMAIN', 'DOMAIN-KEYWORD', 'DOMAIN-SUFFIX'].includes(type)) {
+                ruleTypeCounts[type]++;
+            } else if (type !== 'MATCH' && type !== 'FINAL') {
+                invalidRules++;
+            }
+        });
+
+        if (invalidRules > 0) {
+            console.log(`⚠️ 发现 ${invalidRules} 条无效规则`);
+        } else {
+            console.log('✅ 所有规则格式验证通过');
         }
 
-        const [type, value] = rule.split(',');
-        if (['DOMAIN', 'DOMAIN-KEYWORD', 'DOMAIN-SUFFIX'].includes(type)) {
-            ruleTypeCounts[type]++;
-        } else if (type !== 'MATCH' && type !== 'FINAL') {
-            invalidRules++;
-        }
-    });
-
-    if (invalidRules > 0) {
-        console.warn(`⚠️ 发现 ${invalidRules} 条无效规则`);
-    } else {
-        console.log('✅ 所有规则格式验证通过');
+        console.log('📊 规则类型统计:');
+        Object.entries(ruleTypeCounts).forEach(([type, count]) => {
+            if (count > 0) {
+                console.log(`   - ${type}: ${count} 条`);
+            }
+        });
     }
-
-    console.log('📊 规则类型统计:');
-    Object.entries(ruleTypeCounts).forEach(([type, count]) => {
-        if (count > 0) {
-            console.log(`   - ${type}: ${count} 条`);
-        }
-    });
 
     config.rules = finalRules;
 
