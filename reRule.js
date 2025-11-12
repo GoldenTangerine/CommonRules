@@ -46,12 +46,17 @@ function main(config, profileName) {
         claude: true,
         augmentcode: true,
         trae: true,
+        spotify: true,
         // 代理组开关（根据 PROXY_GROUPS 中的 name 字段添加）
         proxyGroup_us: true,
     };
 
     // 5. 分类好的规则
     const RULES = {
+        spotify: {
+            'DOMAIN-KEYWORD': ['spotify'],
+            'DOMAIN-SUFFIX': ['spotify.com']
+        },
         cursor: {
             'DOMAIN': [
                 'api2.cursor.sh',
