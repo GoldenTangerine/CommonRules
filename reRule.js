@@ -4,14 +4,108 @@
  * @description 根据配置自动生成直连和代理规则,支持多种格式的URL、域名和关键词匹配
  */
 function main(config, profileName) {
+    // ==================== 配置区 ====================
+
     // 1. 日志开关控制
     const ENABLE_LOGGING = true;
 
-    // 2. 默认回退组
-    let targetGroup = 'DIRECT';
+    // 2. 直连网址数组（这些网址不走代理，直接连接）
+    // 支持三种格式:
+    //   1. 完整URL:    'https://example.com'  → 生成 DOMAIN 规则
+    //   2. 纯域名:     'example.com'          → 生成 DOMAIN 规则
+    //   3. 关键词匹配: {type: 'keyword', value: 'example'} → 生成 DOMAIN-KEYWORD 规则
+    const DIRECT_URLS = [
+        'https://hk1.pincc.ai',           // 完整 URL 格式
+        'minimaxi.com',                   // 纯域名格式
+        {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
+        //'https://linux.do/',
+        //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
+    ];
 
-    // 3. 代理组关键词数组（可随时扩展）
+    // 3. 控制开关（true = 启用，false = 禁用）
+    const ENABLE_RULES = {
+        directUrls: true,  // 直连网址开关
+        cursor: true,
+        gemini: true,
+        claude: true,
+        augmentcode: true,
+        trae: true,
+        spotify: true,
+    };
+
+    // 4. 分类好的规则
+    const RULES = {
+        spotify: {
+            'DOMAIN-KEYWORD': ['spotify'],
+            'DOMAIN-SUFFIX': ['spotify.com']
+        },
+        cursor: {
+            'DOMAIN': [
+                'api2.cursor.sh',
+                'api3.cursor.sh',
+                'repo42.cursor.sh',
+                'api4.cursor.sh',
+                'us-only.gcpp.cursor.sh',
+                'marketplace.cursorapi.com',
+                'cursor-cdn.com',
+                'download.todesktop.com'
+            ],
+            'DOMAIN-KEYWORD': ['cursor'],
+            'DOMAIN-SUFFIX': ['cursor.sh', 'cursorapi.com', 'workos.com']
+        },
+        gemini: {
+            'DOMAIN': [
+                'ai.google.dev',
+                'alkalimakersuite-pa.clients6.google.com',
+                'makersuite.google.com'
+            ],
+            'DOMAIN-SUFFIX': [
+                'bard.google.com',
+                'deepmind.com',
+                'deepmind.google',
+                'gemini.google.com',
+                'generativeai.google',
+                'proactivebackend-pa.googleapis.com',
+                'apis.google.com'
+            ],
+            'DOMAIN-KEYWORD': [
+                'colab',
+                'developerprofiles',
+                'generativelanguage'
+            ]
+        },
+        claude: {
+            'DOMAIN': ['cdn.usefathom.com'],
+            'DOMAIN-SUFFIX': ['anthropic.com', 'claude.ai', 'claudeusercontent.com']
+        },
+        augmentcode: {
+            'DOMAIN-KEYWORD': ['augmentcode'],
+            'DOMAIN-SUFFIX': ['augmentcode.com']
+        },
+        trae: {
+            'DOMAIN-SUFFIX': [
+                'trae.ai',
+                'byteoversea.com',
+                'trae-api-sg.mchost.guru',
+                'lf3-static.bytednsdoc.com',
+                'bytegate-sg.byteintlapi.com',
+                'abtestvm-sg.bytedance.com',
+                'tron-sg.bytelemon.com',
+                'sf16-short-sg.bytedapm.com',
+                'trae.com.cn',
+                'tron.jiyunhudong.com',
+                'starling.zijieapi.com'
+            ]
+        }
+    };
+
+    // 5. 代理组关键词数组（可随时扩展）
     const groupKeywords = ['美国', 'united states', 'us', 'america'];
+
+    // ==================== 内部变量和工具函数 ====================
+
+    // 默认回退组
+    let targetGroup = 'DIRECT';
 
     // 预编译正则表达式，提高性能
     const compiledGroupKeywords = groupKeywords.map(kw => new RegExp(kw, 'i'));
@@ -110,97 +204,9 @@ function main(config, profileName) {
         }
     }
 
-    // 3. 直连网址数组（这些网址不走代理，直接连接）
-    // 支持三种格式:
-    //   1. 完整URL:    'https://example.com'  → 生成 DOMAIN 规则
-    //   2. 纯域名:     'example.com'          → 生成 DOMAIN 规则
-    //   3. 关键词匹配: {type: 'keyword', value: 'example'} → 生成 DOMAIN-KEYWORD 规则
-    const DIRECT_URLS = [
-        'https://hk1.pincc.ai',           // 完整 URL 格式
-        'minimaxi.com',                   // 纯域名格式
-        {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
-        //'https://linux.do/',
-        //'https://yxn.hk',  // 建议保留尾随逗号,便于后续添加
-    ];
+    // ==================== 主逻辑 ====================
 
-    // 4. 控制开关（true = 启用，false = 禁用）
-    const ENABLE_RULES = {
-        directUrls: true,  // 直连网址开关
-        cursor: true,
-        gemini: true,
-        claude: true,
-        augmentcode: true,
-        trae: true,
-        spotify: true,
-    };
-
-    // 5. 分类好的规则
-    const RULES = {
-        spotify: {
-            'DOMAIN-KEYWORD': ['spotify'],
-            'DOMAIN-SUFFIX': ['spotify.com']
-        },
-        cursor: {
-            'DOMAIN': [
-                'api2.cursor.sh',
-                'api3.cursor.sh',
-                'repo42.cursor.sh',
-                'api4.cursor.sh',
-                'us-only.gcpp.cursor.sh',
-                'marketplace.cursorapi.com',
-                'cursor-cdn.com',
-                'download.todesktop.com'
-            ],
-            'DOMAIN-KEYWORD': ['cursor'],
-            'DOMAIN-SUFFIX': ['cursor.sh', 'cursorapi.com', 'workos.com']
-        },
-        gemini: {
-            'DOMAIN': [
-                'ai.google.dev',
-                'alkalimakersuite-pa.clients6.google.com',
-                'makersuite.google.com'
-            ],
-            'DOMAIN-SUFFIX': [
-                'bard.google.com',
-                'deepmind.com',
-                'deepmind.google',
-                'gemini.google.com',
-                'generativeai.google',
-                'proactivebackend-pa.googleapis.com',
-                'apis.google.com'
-            ],
-            'DOMAIN-KEYWORD': [
-                'colab',
-                'developerprofiles',
-                'generativelanguage'
-            ]
-        },
-        claude: {
-            'DOMAIN': ['cdn.usefathom.com'],
-            'DOMAIN-SUFFIX': ['anthropic.com', 'claude.ai', 'claudeusercontent.com']
-        },
-        augmentcode: {
-            'DOMAIN-KEYWORD': ['augmentcode'],
-            'DOMAIN-SUFFIX': ['augmentcode.com']
-        },
-        trae: {
-            'DOMAIN-SUFFIX': [
-                'trae.ai',
-                'byteoversea.com',
-                'trae-api-sg.mchost.guru',
-                'lf3-static.bytednsdoc.com',
-                'bytegate-sg.byteintlapi.com',
-                'abtestvm-sg.bytedance.com',
-                'tron-sg.bytelemon.com',
-                'sf16-short-sg.bytedapm.com',
-                'trae.com.cn',
-                'tron.jiyunhudong.com',
-                'starling.zijieapi.com'
-            ]
-        }
-    };
-
-    // 6. 搜索符合条件的代理组
+    // 搜索符合条件的代理组
     const proxyGroups = config['proxy-groups'] || [];
     if (proxyGroups.length > 0) {
         const matchedGroups = proxyGroups.filter(group =>
@@ -216,7 +222,7 @@ function main(config, profileName) {
             : proxyGroups[0].name;
     }
 
-    // 7. 生成规则并去重
+    // 生成规则并去重
     const prependRules = new Set();
 
     // 配置验证
@@ -235,13 +241,13 @@ function main(config, profileName) {
         console.log(`🎯 目标代理组: ${targetGroup}`);
     }
 
-    // 7.1 优先处理直连规则（确保最高优先级）
+    // 优先处理直连规则（确保最高优先级）
     if (ENABLE_LOGGING) {
         console.log('⚡ 处理直连规则...');
     }
     processDirectRules(prependRules);
 
-    // 7.2 处理代理规则
+    // 处理代理规则
     if (ENABLE_LOGGING) {
         console.log('🌐 处理代理规则...');
     }
@@ -255,7 +261,7 @@ function main(config, profileName) {
         console.log(`   - 代理规则: ${proxyCount} 条`);
     }
 
-    // 8. 插入到开头，保证去重
+    // 插入到开头，保证去重
     config.rules = config.rules || [];
     const finalRules = [...prependRules, ...config.rules];
 
