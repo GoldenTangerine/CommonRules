@@ -32,7 +32,8 @@ function main(config, profileName) {
             name: 'us',
             groupKeywords: ['美国', 'united states', 'us', 'america'],
             rules: [
-                {type: 'keyword', value: 'spotify'}
+                {type: 'keyword', value: 'spotify'},
+                {type: 'suffix', value: 'spotify.com'}
             ]
         }
     ];
