@@ -57,7 +57,10 @@ function main(config, profileName) {
             'DOMAIN': [
                 'ai.google.dev',
                 'alkalimakersuite-pa.clients6.google.com',
-                'makersuite.google.com'
+                'makersuite.google.com',
+                'antigravity-unleash.goog',
+                'lh3.googleusercontent.com',
+                'daily-cloudcode-pa.sandbox.googleapis.com'
             ],
             'DOMAIN-SUFFIX': [
                 'bard.google.com',
@@ -66,7 +69,9 @@ function main(config, profileName) {
                 'gemini.google.com',
                 'generativeai.google',
                 'proactivebackend-pa.googleapis.com',
-                'apis.google.com'
+                'apis.google.com',
+                'googleapis.com',
+                'us-central1.run.app',
             ],
             'DOMAIN-KEYWORD': [
                 'colab',
