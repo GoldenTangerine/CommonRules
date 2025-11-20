@@ -16,6 +16,7 @@ function main(config, profileName) {
     //   3. 关键词匹配: {type: 'keyword', value: 'example'} → 生成 DOMAIN-KEYWORD 规则
     const DIRECT_URLS = [
         'https://hk1.pincc.ai',           // 完整 URL 格式
+        'https://88code.org',
         'minimaxi.com',                   // 纯域名格式
         {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
         {type: 'keyword', value: 'yxn.hk'}, 
