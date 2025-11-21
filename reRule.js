@@ -20,6 +20,7 @@ function main(config, profileName) {
         {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
         {type: 'keyword', value: 'yxn.hk'}, 
         {type: 'keyword', value: '88code'}, 
+        {type: 'keyword', value: 'chat.199228'}, 
         //'https://linux.do/', // 建议保留尾随逗号,便于后续添加
     ];
 
