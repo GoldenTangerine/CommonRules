@@ -39,6 +39,7 @@ function main(config, profileName) {
         spotify: {
             'DOMAIN-KEYWORD': ['spotify'],
             'DOMAIN-SUFFIX': ['spotify.com']
+            'DOMAIN-KEYWORD': ['linux'],
         },
         cursor: {
             'DOMAIN': [
