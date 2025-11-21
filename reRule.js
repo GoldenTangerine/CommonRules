@@ -38,7 +38,7 @@ function main(config, profileName) {
     const RULES = {
         spotify: {
             'DOMAIN-KEYWORD': ['spotify'],
-            'DOMAIN-SUFFIX': ['spotify.com']
+            'DOMAIN-SUFFIX': ['spotify.com'],
             'DOMAIN-KEYWORD': ['linux'],
         },
         cursor: {
