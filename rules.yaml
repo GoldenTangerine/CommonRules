@@ -46,9 +46,11 @@ payload:
   - DOMAIN,cdn.usefathom.com
   - DOMAIN-SUFFIX,anthropic.com
   - DOMAIN-SUFFIX,claude.ai
-  - DOMAIN,cdn.usefathom.com
-  - DOMAIN-SUFFIX,anthropic.com
   - DOMAIN-SUFFIX,claudeusercontent.com
+
+  # 禁用QUIC协议 - 阻止UDP连接，强制使用HTTP/HTTPS
+  - AND,((DOMAIN-SUFFIX,claude.ai),(NETWORK,udp)),REJECT
+  - AND,((DOMAIN-SUFFIX,anthropic.com),(NETWORK,udp)),REJECT
 
 
   # Augmentcode 节点代理 域名关键词 后缀匹配

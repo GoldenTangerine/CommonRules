@@ -84,7 +84,12 @@ function main(config, profileName) {
         },
         claude: {
             'DOMAIN': ['cdn.usefathom.com'],
-            'DOMAIN-SUFFIX': ['anthropic.com', 'claude.ai', 'claudeusercontent.com']
+            'DOMAIN-SUFFIX': ['anthropic.com', 'claude.ai', 'claudeusercontent.com'],
+            // 禁用QUIC协议规则 - 阻止UDP连接，强制使用HTTP/HTTPS
+            'AND': [
+                '((DOMAIN-SUFFIX,claude.ai),(NETWORK,udp)),REJECT',
+                '((DOMAIN-SUFFIX,anthropic.com),(NETWORK,udp)),REJECT'
+            ]
         },
         augmentcode: {
             'DOMAIN-KEYWORD': ['augmentcode'],
@@ -198,6 +203,8 @@ function main(config, profileName) {
     /**
      * 处理代理规则
      * @param {Set} rulesSet - 规则集合
+     * @description 遍历所有启用的服务规则，生成对应的代理规则
+     *              AND 规则类型使用固定动作（如 REJECT），不追加 targetGroup
      */
     function processProxyRules(rulesSet) {
         for (const [service, enabled] of Object.entries(ENABLE_RULES)) {
@@ -206,7 +213,13 @@ function main(config, profileName) {
             if (!ruleSet) continue; // 跳过不存在的规则集
             for (const [ruleType, domains] of Object.entries(ruleSet)) {
                 domains.forEach(domain => {
-                    rulesSet.add(`${ruleType},${domain},${targetGroup}`);
+                    // AND 规则特殊处理：规则本身已包含完整动作（如 REJECT），直接拼接
+                    if (ruleType === 'AND') {
+                        rulesSet.add(`${ruleType},${domain}`);
+                    } else {
+                        // 普通规则：追加目标代理组
+                        rulesSet.add(`${ruleType},${domain},${targetGroup}`);
+                    }
                 });
             }
         }
@@ -277,7 +290,8 @@ function main(config, profileName) {
     if (ENABLE_LOGGING) {
         console.log('🔍 规则验证中...');
         let invalidRules = 0;
-        const ruleTypeCounts = { DOMAIN: 0, 'DOMAIN-KEYWORD': 0, 'DOMAIN-SUFFIX': 0 };
+        // 支持的规则类型统计（包含 AND 复合规则）
+        const ruleTypeCounts = { DOMAIN: 0, 'DOMAIN-KEYWORD': 0, 'DOMAIN-SUFFIX': 0, 'AND': 0 };
 
         finalRules.forEach(rule => {
             if (typeof rule !== 'string' || !rule.includes(',')) {
@@ -286,7 +300,8 @@ function main(config, profileName) {
             }
 
             const [type] = rule.split(',');
-            if (['DOMAIN', 'DOMAIN-KEYWORD', 'DOMAIN-SUFFIX'].includes(type)) {
+            // 验证规则类型：支持 DOMAIN/DOMAIN-KEYWORD/DOMAIN-SUFFIX/AND 以及 MATCH/FINAL
+            if (['DOMAIN', 'DOMAIN-KEYWORD', 'DOMAIN-SUFFIX', 'AND'].includes(type)) {
                 ruleTypeCounts[type]++;
             } else if (type !== 'MATCH' && type !== 'FINAL') {
                 invalidRules++;
