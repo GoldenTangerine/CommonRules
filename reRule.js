@@ -21,6 +21,7 @@ function main(config, profileName) {
         {type: 'keyword', value: 'yxn.hk'}, 
         {type: 'keyword', value: '88code'}, 
         {type: 'keyword', value: 'chat.199228'}, 
+        {type: 'keyword', value: 'lilingfeng'}, 
         //'https://linux.do/', // 建议保留尾随逗号,便于后续添加
     ];
 
