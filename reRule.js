@@ -22,6 +22,7 @@ function main(config, profileName) {
         {type: 'keyword', value: '88code'}, 
         {type: 'keyword', value: 'chat.199228'}, 
         {type: 'keyword', value: 'lilingfeng'}, 
+        {type: 'keyword', value: 'duckcoding'}, 
         //'https://linux.do/', // 建议保留尾随逗号,便于后续添加
     ];
 
