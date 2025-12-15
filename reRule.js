@@ -18,11 +18,12 @@ function main(config, profileName) {
         'https://hk1.pincc.ai',           // 完整 URL 格式
         'minimaxi.com',                   // 纯域名格式
         {type: 'keyword', value: 'minimaxi'}, // 关键词匹配格式 (匹配所有包含 minimaxi 的域名)
-        {type: 'keyword', value: 'yxn.hk'}, 
+        {type: 'keyword', value: 'linkflow'}, 
         {type: 'keyword', value: '88code'}, 
         {type: 'keyword', value: 'chat.199228'}, 
         {type: 'keyword', value: 'lilingfeng'}, 
         {type: 'keyword', value: 'duckcoding'}, 
+        {type: 'keyword', value: 'sczpkj'}, 
         //'https://linux.do/', // 建议保留尾随逗号,便于后续添加
     ];
 
